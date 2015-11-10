@@ -14,11 +14,42 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
 
     @IBOutlet weak var collection: UICollectionView!
     
+    var pokemon = [Pokemon]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         collection.delegate = self
         collection.dataSource = self
+        
+        parsePokemonCSV()
+    }
+    
+    func parsePokemonCSV() {
+        
+        //Grabbing the path of the CSV file.
+        let path = NSBundle.mainBundle().pathForResource("pokemon", ofType: "csv")!
+        
+        do {
+            
+            //Parsing the CSV file.
+            
+            let csv = try CSV(contentsOfURL: path)
+            let rows = csv.rows
+            
+            //Iterating through the rows. Each row is a dictionary and we're grabbing the name and ID and throwing it into our array
+            
+            for row in rows {
+                let pokeId = Int(row["id"]!)!
+                let name = row["identifier"]!
+                let poke = Pokemon(name: name, pokedexId: pokeId)
+                pokemon.append(poke) // adding to the array we created on line 17
+                
+            }
+            
+        } catch let err as NSError {
+            print(err.debugDescription)
+        }
     }
     
     //The role of cellForItemAtIndexPath is to return cells on the screen.
@@ -27,8 +58,9 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         //We are telling it to give us a reusable cell.
         if let cell = collectionView.dequeueReusableCellWithReuseIdentifier("Pokecell", forIndexPath: indexPath) as? PokeCell {
             
-            let pokemon = Pokemon(name: "test", pokedexId: indexPath.row)
-            cell.configureCell(pokemon)
+            let poke = pokemon[indexPath.row]
+    
+            cell.configureCell(poke)
             return cell
             
         } else {
